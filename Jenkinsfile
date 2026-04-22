@@ -2,7 +2,13 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'NodeJS 18'
+        nodejs 'Node JS 18'
+    }
+
+    environment {
+        NODE_ENV = 'test'
+        NPM_CONFIG_FUND = 'false'
+        NPM_CONFIG_AUDIT = 'false'
     }
 
     stages {
@@ -14,28 +20,56 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Clean Workspace') {
             steps {
-                sh 'npm install'
+                sh '''
+                echo "Cleaning workspace..."
+                rm -rf node_modules package-lock.json
+                npm cache clean --force
+                '''
             }
         }
 
-        stage('Lint') {
+        stage('Install Dependencies (Build)') {
             steps {
-                sh 'npm run lint'
+                sh '''
+                echo "Installing dependencies..."
+                npm ci || npm install --include=dev
+                '''
             }
         }
 
-        stage('Test') {
+        stage('Lint (Code Quality)') {
             steps {
-                sh 'npm run test'
+                sh '''
+                echo "Running ESLint..."
+                npm run lint
+                '''
+            }
+        }
+
+        stage('Test (Mocha)') {
+            steps {
+                sh '''
+                echo "Running tests..."
+                npm run test || npm test
+                '''
+            }
+        }
+
+        stage('Coverage (Optional)') {
+            steps {
+                sh '''
+                echo "Running coverage..."
+                npm run test-cov || true
+                '''
             }
         }
 
         stage('Deploy (Simulation)') {
             steps {
-                echo 'Deploy lokal (simulasi)'
                 sh '''
+                echo "Deploy simulation..."
                 mkdir -p /tmp/express-ci
                 cp -r . /tmp/express-ci
                 '''
@@ -45,10 +79,15 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline SUCCESS ✔'
+            echo 'PIPELINE SUCCESS ✔ CI Express berjalan normal'
         }
+
         failure {
-            echo 'Pipeline FAILED ❌'
+            echo 'PIPELINE FAILED ❌ cek dependency / test error'
+        }
+
+        always {
+            echo 'Cleaning after build...'
         }
     }
 }
