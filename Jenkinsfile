@@ -30,14 +30,16 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies (Build)') {
-            steps {
-                sh '''
-                echo "Installing dependencies..."
-                npm ci || npm install --include=dev
-                '''
-            }
-        }
+        stage('Install Dependencies') {
+    steps {
+        sh '''
+        echo "Clean install dependencies..."
+        rm -rf node_modules package-lock.json
+        npm cache clean --force
+        npm install --legacy-peer-deps
+        '''
+    }
+}
 
         stage('Lint (Code Quality)') {
             steps {
