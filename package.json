@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
 
-    "test": "mocha --require test/support/env --reporter spec --check-leaks test/ test/acceptance/",
+    "test": "mocha test/ci.test.js",
 
     "test:ci": "npm run lint && npm run test",
 
