@@ -14,29 +14,41 @@ pipeline {
             }
         }
 
-        stage('Install') {
+        stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
         }
 
+        stage('Lint') {
+            steps {
+                sh 'npm run lint'
+            }
+        }
+
         stage('Test') {
             steps {
-                sh 'npm test'
+                sh 'npm run test'
             }
         }
 
-        stage('Build') {
+        stage('Deploy (Simulation)') {
             steps {
-                echo 'Express tidak butuh build khusus'
+                echo 'Deploy lokal (simulasi)'
+                sh '''
+                mkdir -p /tmp/express-ci
+                cp -r . /tmp/express-ci
+                '''
             }
         }
+    }
 
-        stage('Deploy') {
-            steps {
-                echo 'Deploy lokal'
-                sh 'mkdir -p /tmp/express && cp -r . /tmp/express'
-            }
+    post {
+        success {
+            echo 'Pipeline SUCCESS ✔'
+        }
+        failure {
+            echo 'Pipeline FAILED ❌'
         }
     }
 }
